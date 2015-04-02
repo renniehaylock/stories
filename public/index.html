@@ -1,0 +1,53 @@
+<!-- index.html -->
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="storiesApp">
+<head>
+    <!-- META -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+    <title>Stories</title>
+
+    <!-- Google Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,900' rel='stylesheet' type='text/css'>
+    <!-- SCROLLS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+    <link rel="stylesheet" href="stylesheets/style.css"><!-- load bootstrap -->
+
+    <!-- SPELLS -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+    
+        <script src="javascripts/angular-masonry.min.js"></script>
+
+    <script src="javascripts/facebookapi.js"></script> <!-- load Facebook API -->
+    <script src="javascripts/facebooklogin.js"></script> <!-- load Facebook Login -->
+    <script src="javascripts/core.js"></script>
+
+</head>
+<!-- SET THE CONTROLLER AND GET ALL MEMBERS -->
+<body ng-controller="mainController" class="hide-overflow">
+    <div class="top-line"></div>
+	<div id="status"></div>
+	<div class="container">
+        <div class="header">
+            <h1 class="text-center"><img src="images/bookIconLargeColor.png" alt="stories" class="book-icon">Stories</h1>
+            <h2 class="text-center">Your Facebook timeline like never before</h2>
+        </div>
+
+        <!-- FORM TO LOGIN -->
+        <div id="todo-form" class="row">
+            <div class="col-sm-8 col-sm-offset-2 text-center">
+                <!-- Will attempt to login with FB and create new member in our app -->
+                <button class="login-button _fbloginbutton" ng-click="createMember()">Login With Facebook</button><br>
+                <span class="logout-button _fblogoutbutton" ng-click="logoutMember()">logout</span>
+            </div>
+        </div>
+    </div>
+    <div class="text-center splash-image">
+        <img src="images/landing-preview.jpg" width="700" alt="">
+    </div>
+</body>
+</html>
