@@ -26,7 +26,7 @@ app.get('/home', function(req, res) {
 });
 
 // define model =========================
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://heroku_app35736222:7ot4ip3pmb00hv1429rvmvqu58@ds061601.mongolab.com:61601/heroku_app35736222?replicaSet=rs-ds061601');
 var Member = mongoose.model('Member', {
         name : String,
         fbid : String,
