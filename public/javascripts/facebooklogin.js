@@ -18,7 +18,7 @@ function statusChangeCallback(response) {
       console.log('Successful login for: ' + response.id);
       $("._fbloginbutton").html(response.name);
       $("._fbloginbutton").attr("ng-click", "goHome()");
-      $("._fbloginbutton").prepend("<img class='profile-pic' src='http://graph.facebook.com/v2.3/" + response.id + "/picture'>");
+      $("._fbloginbutton").prepend("<img class='profile-pic' src='https://graph.facebook.com/v2.3/" + response.id + "/picture'>");
       $("._fblogoutbutton").show();
 
 
