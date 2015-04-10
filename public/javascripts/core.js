@@ -8,15 +8,6 @@ var storiesApp = angular.module('storiesApp', [])
 storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $http) {
     $scope.formData = {};
 
-    // when landing on the page, get all todos and show them
-    $http.get('/members')
-        .success(function(data) {
-            $scope.members = data;
-            console.log(data);
-        })
-        .error(function(data) {
-            console.log('Error: ' + data);
-        });
 
     // REMEMBER That filters do not change the sorting of the stories
     // they just loop and decide what to show and what not to
@@ -37,6 +28,11 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         $scope.stories = tileStories($scope.stories);
     };
 
+    $scope.filterFriendStories = function(friend) {
+        toggleFriend(friend);
+        applyFilters();
+        $scope.sortStoriesByDate();
+    };
 
     $scope.filterPhotos = function(status) {
         if (status == 'active') {
@@ -48,6 +44,8 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             toggleStories(true, 'photo');
             $scope.filters.photos.status = 'active';
         }
+        $scope.sortStoriesByDate();
+        setFiltersStringForTitle();
     };
 
     $scope.filterPhotoStories = function(status) {
@@ -60,6 +58,8 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             toggleStories(true, 'added_photos');
             $scope.filters.photostories.status = 'active';
         }
+        $scope.sortStoriesByDate();
+        setFiltersStringForTitle();
     };
 
 
@@ -73,6 +73,8 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             toggleStories(true, 'shared_story');
             $scope.filters.links.status = 'active';
         }
+        $scope.sortStoriesByDate();
+        setFiltersStringForTitle();
     };
 
     $scope.filterLocationTags = function(status) {
@@ -85,6 +87,8 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             toggleStories(true, 'location_tags');
             $scope.filters.locationtags.status = 'active';
         }
+        $scope.sortStoriesByDate();
+        setFiltersStringForTitle();
     };
 
     $scope.filterStatusUpdates = function(status) {
@@ -97,6 +101,8 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             toggleStories(true, 'mobile_status_update');
             $scope.filters.statusupdates.status = 'active';
         }
+        $scope.sortStoriesByDate();
+        setFiltersStringForTitle();
     };
 
     $scope.filterWallPosts = function(status) {
@@ -109,12 +115,10 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             toggleStories(true,  'wall_post');
             $scope.filters.wallposts.status = 'active';
         }
+        $scope.sortStoriesByDate();
+        setFiltersStringForTitle();
     };
 
-    $scope.showMoreStoriesOnScroll = function() {
-        // Check that the last displayed story is still in the selected year....
-        // If not, then just skip to the next 
-    }
     $scope.getStoriesForYear = function(year) {
         // First check if the current story pool has enough pictures to display...
         // IF IT DOES
@@ -127,22 +131,98 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         //     getFeedWithTimestamp(timestamp);
         //     getPhotosWithTimestamp(timestamp);
         // }
-        console.log("Checking year");
-        console.log(year.timestamp);
-
         timestamp = year.timestamp;
-        getFeedWithTimestamp(timestamp);
-        getPhotosWithTimestamp(timestamp);
+        sincetimestamp = year.sincetimestamp;
+        console.log("Checking year since ");
+        console.log(timestamp);
+        console.log("Checking year until ");
+        console.log(sincetimestamp);
+
+
+        getFeedWithTimestamp(timestamp, sincetimestamp);
+        getPhotosWithTimestamp(timestamp, sincetimestamp);
         toggleYear(year);
         $scope.sortStoriesByDate(); // since we're adding new data into the story pool, we need to make sure its sorted
 
     }
 
-    function getFeedWithTimestamp(timestamp) {
-        FB.api('/me/feed?limit=240&until=' + timestamp, function(response) {
+    $scope.showMoreStoriesOnScroll = function() {
+        // Check that the last displayed story is still in the selected year....
+        // If not, then just skip to the next 
+    }
+
+    function setFiltersStringForTitle() {
+        var string = "";
+        var activeFilters = [];
+        for (filter in $scope.filters) {
+            if ($scope.filters[filter].status == "active") {
+                activeFilters.push($scope.filters[filter].name);
+            };
+        };
+
+        $scope.seeing.filters = activeFilters.join(" / ");    
+    }
+
+    function getFriendsFromStory(story) {
+
+        function makeFriend(f) {
+            var friend = {};
+            friend.id = f.id;
+            friend.name = f.name;
+            friend.status = 'inactive';
+            if (!contains($scope.friends,friend)) {
+                $scope.friends.push(friend);
+            }
+        };
+
+        // Get user who create this story
+        if (story.from) {
+            var friend = {};
+            friend.id = story.from.id;
+            friend.name = story.from.name;
+            friend.status = 'inactive';
+            if (!contains($scope.friends,friend)) {
+                $scope.friends.push(friend);
+            };
+        };
+
+        // Get users who are tagged in this story
+        if (story.tags && Array.isArray(story.tags.data)) {
+            story.tags.data.forEach(function(friend) {
+                if (friend.name && friend.id) {
+                    makeFriend(friend);
+                };
+            });
+        };
+
+        // Get users who liked this story
+        if (story.likes && Array.isArray(story.likes.data)) {
+            story.likes.data.forEach(function(friend) {
+                if (friend.name && friend.id) {
+                    makeFriend(friend);
+                };
+            });
+        };
+
+        // Get users who commented on this story
+        if (story.comments && Array.isArray(story.comments.data)) {
+            story.comments.data.forEach(function(comment) {
+                if (comment.from.name && comment.from.id) {
+                    makeFriend(comment.from);
+                };
+            });
+        };
+    }
+
+    function getFeedWithTimestamp(timestamp, sincetimestamp) {
+        FB.api('/me/feed?limit=240&until=' + timestamp + '&since=' + sincetimestamp, function(response) {
             console.log('Getting Text Posts');
             console.log(response);
             response.data.forEach(function(story) {
+
+                // Populate the friends array
+                getFriendsFromStory(story);
+
                 if (!contains($scope.stories,story) && (story.message || story.story)) {
 
                     var date = new Date(story.created_time);
@@ -186,14 +266,16 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
                 };
             });
             applyFilters();
+            sortFriendsByName();
+            $scope.sortStoriesByDate();
             $scope.stories = tileStories($scope.stories);
             $scope.$apply();
             console.log($scope.stories);
         });
     };
 
-    function getPhotosWithTimestamp(timestamp) {
-        FB.api('/me/photos?limit=240&until=' + timestamp, function(response) {
+    function getPhotosWithTimestamp(timestamp, sinceTimestamp) {
+        FB.api('/me/photos?limit=240&until=' + timestamp + '&since=' + sincetimestamp, function(response) {
 
             console.log('Getting Photos');
             console.log(response);
@@ -216,81 +298,13 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             });
 
             applyFilters();
+            sortFriendsByName();
+            $scope.sortStoriesByDate();
             $scope.stories = tileStories($scope.stories);
             $scope.$apply();
             console.log($scope.stories);
         });
     }
-
-    // Mock Data for stories
-    $scope.getRecentStories = function() {
-        FB.api('/me/feed?limit=240', function(response) {
-
-            console.log('Getting Text Posts');
-            console.log(response);
-
-            response.data.forEach(function(story) {
-
-                if (!contains($scope.stories,story) && (story.message || story.story)) {
-
-                    var date = new Date(story.created_time);
-                    story.created_date_string = date.toDateString();
-
-                    switch(story.type) {
-                        case 'status':
-                            story.display = true;
-                            story.blocktype = 'text';
-                            story.color = chooseColor();
-                            story.size = 'small';
-                            $scope.stories.push(story);
-                            break;
-                        case 'link':
-                            story.display = true;
-                            story.blocktype = 'text';
-                            story.color = chooseColor();
-                            story.size = 'small';
-                            $scope.stories.push(story);
-                            break;
-                        case 'photo':
-                            story.message = story.story;
-                            story.display = true;
-                            story.blocktype = 'text';
-                            story.color = chooseColor();
-                            story.size = 'medium';
-                            $scope.stories.push(story);
-                            break;
-                    };
-                };
-            });
-            applyFilters();
-            $scope.stories = shuffle($scope.stories);
-            $scope.stories = tileStories($scope.stories);
-            $scope.$apply();
-            console.log($scope.stories);
-        });
-
-        FB.api('/me/photos?limit=240', function(response) {
-            console.log('Getting Photos');
-            console.log(response);
-            response.data.forEach(function(story) {
-                if (!contains($scope.stories,story)) {
-                    var date = new Date(story.created_time);
-                    story.created_date_string = date.toDateString();
-                    story.display = true;
-                    story.blocktype = 'photo';
-                    story.status_type = 'photo';
-                    story.size = 'large';
-                    story.imageUrl = story.images[1].source;
-                    $scope.stories.push(story);
-                }
-            });
-            applyFilters();
-            $scope.stories = shuffle($scope.stories);
-            $scope.stories = tileStories($scope.stories);
-            $scope.$apply();
-            console.log($scope.stories);
-        });
-    };
 
     // Logout from FB
     $scope.logoutMember = function() {
@@ -314,6 +328,7 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
                     // Not a lot of massaging data here, since our Member object shadows the fbApi fields
                     var memberData = response;
                     memberData['fbid'] = response.id;
+                    $scope.member = memberData;
 
                     $http.post('/members', memberData)
                     .success(function(data) {
@@ -328,63 +343,56 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
                 checkLoginState();
                 console.log('User cancelled login or did not fully authorize.');
             }
-        },{scope: 'public_profile,user_friends,email,user_about_me,user_posts,user_birthday,user_photos,user_relationships,user_status,user_tagged_places'});
-    };
-
-    // delete a todo after checking it
-    $scope.deleteMember = function(id) {
-        $http.delete('/members/' + id)
-            .success(function(data) {
-                $scope.members = data;
-                console.log(data);
-            })
-            .error(function(data) {
-                console.log('Error: ' + data);
-            });
+        },{scope: 'public_profile,user_friends,email,user_posts,user_birthday,user_photos,user_status'});
     };
 
     // DATA
     // =========================================
 
-    $scope.selectedYear = '2015';
-
     $scope.loggedmember;
     
     $scope.stories = [];
-
+    $scope.visibleStories = 0;
     $scope.seeing = {
-        type : 'photos',
-        location : 'Miami',
-        age : '23'
+        year    : '',
+        filters : '',
+        friend  : null,
     };
 
     // Default active filters shown here
     $scope.filters = {
         photos :        { name: 'Photos',           status : 'active',      identifier : 'photo' },
-        statusupdates : { name: 'Status Updates',   status : 'inactive',    identifier : 'mobile_status_update' },
-        wallposts :     { name: 'Wall Posts',       status : 'inactive',    identifier : 'wall_post'  },
-        links :         { name: 'Links',            status : 'inactive',    identifier : 'shared_story'  },
+        statusupdates : { name: 'Status Updates',   status : 'active',    identifier : 'mobile_status_update' },
+        wallposts :     { name: 'Wall Posts',       status : 'active',    identifier : 'wall_post'  },
+        links :         { name: 'Links',            status : 'active',    identifier : 'shared_story'  },
         photostories :  { name: 'Photo Stories',    status : 'inactive',    identifier : 'added_photos'  },
         locationtags :  { name: 'Location Tags',    status : 'inactive' },
     };
 
     $scope.years = [
-        { name : '2015' , status: 'active', timestamp: '1451563199', sincetimestamp: '1420027200'}, // timestamp for Dec 31, 11:59PM of the year
-        { name : '2014' , status: 'inactive', timestamp: '1420027199', sincetimestamp: '1388491200'},
-        { name : '2013' , status: 'inactive', timestamp: '1388491199', sincetimestamp: '1356955200'},
-        { name : '2012' , status: 'inactive', timestamp: '1356955199', sincetimestamp: '1325332800'},
-        { name : '2011' , status: 'inactive', timestamp: '1325332799', sincetimestamp: '1293796800'},
-        { name : '2010' , status: 'inactive', timestamp: '1293796799', sincetimestamp: '1262260800'},
-        { name : '2009' , status: 'inactive', timestamp: '1262260799', sincetimestamp: '1230724800'},
-        { name : '2008' , status: 'inactive', timestamp: '1230724799', sincetimestamp: '1199102400'},
-        { name : '2007' , status: 'inactive', timestamp: '1199102399', sincetimestamp: '1167566400'},
-        { name : '2006' , status: 'inactive', timestamp: '1167566399', sincetimestamp: '1136030400'},
+        { name : '2015' , status: 'active', timestamp: '1451563199', sincetimestamp: '1420027199'}, // timestamp for Dec 31, 11:59PM of the year
+        { name : '2014' , status: 'inactive', timestamp: '1420027199', sincetimestamp: '1388491199'},
+        { name : '2013' , status: 'inactive', timestamp: '1388491199', sincetimestamp: '1356955199'},
+        { name : '2012' , status: 'inactive', timestamp: '1356955199', sincetimestamp: '1325332799'},
+        { name : '2011' , status: 'inactive', timestamp: '1325332799', sincetimestamp: '1293796799'},
+        { name : '2010' , status: 'inactive', timestamp: '1293796799', sincetimestamp: '1262260799'},
+        { name : '2009' , status: 'inactive', timestamp: '1262260799', sincetimestamp: '1230724799'},
+        { name : '2008' , status: 'inactive', timestamp: '1230724799', sincetimestamp: '1199102399'},
+        { name : '2007' , status: 'inactive', timestamp: '1199102399', sincetimestamp: '1167566399'},
+        { name : '2006' , status: 'inactive', timestamp: '1167566399', sincetimestamp: '1136030399'},
         { name : '2005' , status: 'inactive', timestamp: '1136030399', sincetimestamp: '1104494400'},
     ];
 
+    $scope.friends = [
+        { id: "10155424826645077", name: "Nikkita Nair", status: 'inactive'},
+        { id: "10152628496730146", name: "Rennie Haylock", status: 'inactive'},
+    ];
+
     $scope.member = {};
+
     // HELPERS
     // =========================================
+    
     function chooseColor() {
         var colors = [ 'blue', 'green', 'grey', 'light'];
         return colors[Math.floor(Math.random()*colors.length)];
@@ -470,6 +478,9 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         console.log(storyPool);
         
 
+        // Update # of visible stories
+        $scope.visibleStories = storyPool.length;
+
         while (storyPool.length > 0 && storyPointer < storyCount && storiesLeft != 1) {
             var storiesLeft = storyCount - storyPointer;
             validPatterns = patternPool.filter(enoughImages);
@@ -540,6 +551,17 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         });
     }
 
+    function sortFriendsByName() {
+        $scope.friends.sort(function(a,b){
+            // Turn your strings into dates, and then subtract them
+            // to get a value that is either negative, positive, or zero.
+            if(a.name < b.name) return -1;
+            if(a.name > b.name) return 1;
+            return 0;
+        });
+    }
+
+
     function sortStoriesByLikes() {
         $scope.stories.sort(function(a,b){
             a = (a.likes == null) ? null : a.likes.data.length;
@@ -553,19 +575,22 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
     }
     // *
     // This function makes sure that we only show
-    // stories that are part of the selected type and year
+    // stories that are part of the selected type, year, and friend
     // *
     function toggleStories(display, type) {
         console.log("Im in toggle stories");
 
         selectedYear = getSelectedYear();
+        selectedFriend = getSelectedFriend();
+
         startTimestamp = selectedYear.sincetimestamp*1000;
         endTimestamp = selectedYear.timestamp*1000;
+
         console.log(startTimestamp);
         console.log(endTimestamp);
         console.log($scope.stories);
         for (i = 0; i < $scope.stories.length ; i++) {
-            if ($scope.stories[i].timestamp < startTimestamp || $scope.stories[i].timestamp > endTimestamp) {
+            if ($scope.stories[i].timestamp < startTimestamp || $scope.stories[i].timestamp > endTimestamp || (selectedFriend && !isFriendRelatedStory($scope.stories[i], selectedFriend))) {
                 $scope.stories[i].display = false;
             } else {
                 // If its in the right year, then check the type
@@ -587,7 +612,59 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         $scope.stories = tileStories($scope.stories);
     };
 
+    function isFriendRelatedStory(story, friend) {
+        var friendPostedStory, friendTaggedInStory, friendLikedStory, friendCommentedStory = false;
+
+        if (story.from)     friendPostedStory       = (story.from.id == friend.id);
+        if (story.tags)     friendTaggedInStory     = isFriendTaggedInStory(friend, story);
+        if (story.likes)    friendLikedStory        = didFriendLikeStory(friend, story);
+        if (story.comments) friendCommentedStory    = didFriendCommentOnStory(friend, story);
+
+        return (friendPostedStory || friendTaggedInStory || friendLikedStory || friendCommentedStory);
+    }
+
+    function isFriendTaggedInStory(friend,story) {
+        var isTagged = false;
+        if (Array.isArray(story.tags.data)) {
+            story.tags.data.forEach(function(f) {
+                if (friend.id == f.id) {
+                    isTagged = true;
+                };
+            });
+        }
+
+        return isTagged;
+    }
+
+    function didFriendLikeStory(friend,story) {
+        var didLike = false;
+        if (Array.isArray(story.likes.data)) {
+            story.likes.data.forEach(function(f) {
+                if (friend.id == f.id) {
+                    didLike = true;
+                };
+            });
+        }
+
+        return didLike;
+    }
+
+    function didFriendCommentOnStory(friend,story) {
+        var didComment = false;
+        if (Array.isArray(story.comments.data)) {
+            story.comments.data.forEach(function(c) {
+                if (friend.id == c.from.id) {
+                    didComment = true;
+                };
+            });
+        }
+
+        return didComment;
+    }
+
+
     function toggleYear(year) {
+        $scope.seeing.year = year.name;
         // Toggle selected year on, and other years off
         for (i = 0; i < $scope.years.length ; i++) {
             if (year.name == $scope.years[i].name) {
@@ -598,6 +675,23 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         };
     };
 
+
+    function toggleFriend(friend) {
+        // Toggle selected year on, and other years off
+        for (i = 0; i < $scope.friends.length ; i++) {
+            if (friend.name == $scope.friends[i].name) {
+                if (friend.status == 'active') {
+                    $scope.seeing.friend = null;
+                    $scope.friends[i].status = 'inactive';
+                } else {
+                    $scope.seeing.friend = friend;
+                    $scope.friends[i].status = 'active';
+                }
+            } else {
+                $scope.friends[i].status = 'inactive';
+            }
+        };
+    };
     function getSelectedYear() {
         for (i = 0; i < $scope.years.length ; i++) {
             if ($scope.years[i].status == "active") {
@@ -605,6 +699,15 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             };
         };
     };
+
+    function getSelectedFriend() {
+        for (i = 0; i < $scope.friends.length ; i++) {
+            if ($scope.friends[i].status == "active") {
+                return $scope.friends[i];
+            };
+        };
+    };
+
 
     // *
     // This function gets called when we want to apply all filters
@@ -624,4 +727,16 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         };
     };
 
+    $scope.init = function () {
+        defaultYear = getSelectedYear();
+        $scope.getStoriesForYear(defaultYear);
+        $scope.seeing.year = defaultYear.name;
+        $scope.seeing.friend = getSelectedFriend();
+        setFiltersStringForTitle();
+        FB.api('/me', function(response) {
+            var memberData = response;
+            memberData['fbid'] = response.id;
+            $scope.member = memberData;
+        });
+    };
 }]);

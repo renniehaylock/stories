@@ -1,6 +1,7 @@
 {
   "name": "stories",
   "version": "0.0.0",
+  "author": "rennie-haylock",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
@@ -14,5 +15,6 @@
     "mongoose"   : "~3.6.2",
     "morgan": "~1.5.1",
     "serve-favicon": "~2.2.0"
-  }
+  },
+  "engines": { "node" : "0.10.31" }
 }

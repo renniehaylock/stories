@@ -12,17 +12,19 @@
 
     <!-- Google Fonts -->
     <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900' rel='stylesheet' type='text/css'>
-    <!-- SCROLLS -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
-    <link rel="stylesheet" href="stylesheets/style.css"><!-- load bootstrap -->
-    
+
     <!-- SPELLS -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.min.js"></script><!-- load angular -->    
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/masonry/3.2.2/masonry.pkgd.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/style.css">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
     <script src="javascripts/tilepatterns.js"></script>
 		<script src="javascripts/facebooklogin.js"></script>
-		<script src="javascripts/facebookapi.js"></script>
 		<script src="javascripts/core.js"></script>
 
 </head>
@@ -33,42 +35,97 @@
 			<div class="filter-bar">
 				<div class="filter-title text-center"><img src="images/bookIconWhite.png" width="35" alt="stories" class="book-icon-small">Stories</div>
 				<div class="filter-content">
-					<div class="filter-subtitle">Update type</div>
-					<ul>
-						<li ng-click="filterPhotos(filters.photos.status)" class="filter-{{ filters.photos.status }}">{{ filters.photos.name }}</li>
-						<li ng-click="filterStatusUpdates(filters.statusupdates.status)" class="filter-{{ filters.statusupdates.status }}">{{ filters.statusupdates.name }}</li>
-						<li ng-click="filterWallPosts(filters.wallposts.status)" class="filter-{{ filters.wallposts.status }}">{{ filters.wallposts.name }}</li>
-						<li ng-click="filterLinks(filters.links.status)" class="filter-{{ filters.links.status }}">{{ filters.links.name }}</li>
-						<li ng-click="filterPhotoStories(filters.photostories.status)" class="filter-{{ filters.photostories.status }}">{{ filters.photostories.name }}</li>
-						<li ng-click="filterLocationTags(filters.locationtags.status)" class="filter-{{ filters.locationtags.status }}">{{ filters.locationtags.name }}</li>
-					</ul>
+					<div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <div class="sidebar-item-title-box">
+	                    <a type="button" data-target="#collapse-years" href="#" data-toggle="collapse" aria-expanded="false">
+	                    	<span class="glyphicon glyphicon-chevron-up"></span><img class="icon" src="images/years-icon.png">Years
+	                    </a>
+                    </div>
+                    <ul class="sidebar-collapse-box collapse" role="menu" id="collapse-years">
+												<li ng-repeat="year in years" role="presentation" ng-click="getStoriesForYear(year)" class="filter-{{ year.status }}">
+													{{ year.name }}
+												</li>
+										</ul>
+                </li>
+                <li class="sidebar-item">
+                	<div class="sidebar-item-title-box">
+                		<a type="button" data-target="#collapse-update-type" href="#" data-toggle="collapse" aria-expanded="false">
+                    	<span class="glyphicon glyphicon-chevron-up"></span><img class="icon" src="images/update-types-icon.png">Types
+                    </a>
+                	</div>
+                    <ul class="sidebar-collapse-box collapse" role="menu" id="collapse-update-type">
+											<li ng-click="filterPhotos(filters.photos.status)" class="filter-{{ filters.photos.status }}">
+												<img class="icon" src="images/photos-icon.png"> {{ filters.photos.name }}
+											</li>
+											<li ng-click="filterStatusUpdates(filters.statusupdates.status)" class="filter-{{ filters.statusupdates.status }}">
+												<img class="icon" src="images/status-updates-icon.png"> {{ filters.statusupdates.name }}
+											</li>
+											<li ng-click="filterWallPosts(filters.wallposts.status)" class="filter-{{ filters.wallposts.status }}">
+												<img class="icon" src="images/wall-posts-icon.png"> {{ filters.wallposts.name }}
+											</li>
+											<li ng-click="filterLinks(filters.links.status)" class="filter-{{ filters.links.status }}">
+												<img class="icon" src="images/link-icon.png"> {{ filters.links.name }}
+											</li>
+											<li ng-click="filterPhotoStories(filters.photostories.status)" class="filter-{{ filters.photostories.status }}">
+												<img class="icon" src="images/photo-stories-icon.png"> {{ filters.photostories.name }}
+											</li>
+											<li ng-click="filterLocationTags(filters.locationtags.status)" class="filter-{{ filters.locationtags.status }}">
+												<img class="icon" src="images/tagged-locations-icon.png"> {{ filters.locationtags.name }}
+											</li>
+									  </ul>
+                </li>
+                <li class="sidebar-item">
+                    <div class="sidebar-item-title-box">
+	                    <a type="button" data-target="#collapse-friends" href="#" data-toggle="collapse" aria-expanded="false">
+	                    	<span class="glyphicon glyphicon-chevron-up"></span><img class="icon" src="images/friends-icon.png">People
+	                    </a>
+                    </div>
+                    <ul class="sidebar-collapse-box collapse" role="menu" id="collapse-friends">
+												<li ng-repeat="friend in friends" role="presentation" ng-click="filterFriendStories(friend)" class="filter-{{ friend.status }}">	
+													<img src="{{ 'http://graph.facebook.com/v2.3/' + friend.id + '/picture' }}" class="friends-profile-pic">{{ friend.name }}
+												</li>
+										</ul>
+                </li>
+            </ul>
+        	</div>
 				</div>
-				<div class="filter-content">
-					<div class="filter-subtitle">Years</div>
-					<ul ng-repeat="year in years">
-							<li ng-click="getStoriesForYear(year)" class="filter-{{ year.status }}">{{ year.name }}</li>
-					</ul>
-				</div>
-
 			</div>
 
 			<div class="content">
-
-				<button class="login-button _fbloginbutton" ng-click="getRecentStories()">Get Recent Stories</button>
-
-				<div class="status text-center">
-					Seeing 
-					<span class="filter-variable">{{ seeing.type }}</span>
-					at age 
-					<span class="filter-variable">{{ seeing.age }}</span>
-					in
-					<span class="filter-variable">{{ seeing.location }}</span>
+				<div class="user-info-box">
+					<span ng-click="logoutMember()" class="_fblogoutbutton">{{ member.name }}<span class="glyphicon glyphicon-log-out"></span></span>
 				</div>
-				<div><button ng-click="sortStoriesByDate()">Sort by date</button></div>
-				<div><button ng-click="sortStoriesByLikes()">Sort by likes</button></div>
+				<div class="status text-center">
+					<span class="filter-variable">{{ seeing.year }}</span>
+					<p class="seeing-filters" ng-if="seeing.filters != ''">
+							<span>{{ seeing.filters }}</span>
+					</p>
+					<div ng-if="seeing.friend">
+						<button class="seeing-friend selected-friend-label">
+						<a href="{{ seeing.friend.id | facebookUrl }}">
+								<img ng-if="seeing.friend" src="{{ 'http://graph.facebook.com/v2.3/' + seeing.friend.id + '/picture' }}" class="friends-profile-pic-small">
+								<span>{{ seeing.friend.name }}</span>
+						</a>
+						</button>
+						<p class="fine-print">stories this person liked, commented, sent, or tagged</p>
+					</div>
 
-				<div class="stories-container">
-					<div masonry item-selector="._story-block">
+				</div>
+				<div ng-if="visibleStories == 0" class="no-stories text-center">No Stories Matched Your Filters</div>
+				<div class="stories-container text-center" ng-if="visibleStories > 0">
+					<div class="btn-group filter-button">
+					  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+					    Sort by <span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu" role="menu">
+					    <li><a href="#" ng-click="sortStoriesByDate()">date</a></li>
+					    <li><a href="#" ng-click="sortStoriesByLikes()">likes</a></li>
+					  </ul>
+					</div>
+
+					<div>
 					    <div ng-repeat="story in stories">
 					    	<div ng-if="story.display">
 
@@ -123,5 +180,10 @@
 				</div>
  			</div>
 	</div>
-</body>
+<!-- 	<script type="text/javascript">
+		$('ul.dropdown-menu li').click(function(e) {
+	    e.stopPropagation();
+		});
+	</script>
+ --></body>
 </html>
