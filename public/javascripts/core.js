@@ -343,7 +343,7 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
                 checkLoginState();
                 console.log('User cancelled login or did not fully authorize.');
             }
-        },{scope: 'public_profile,user_friends,email,user_posts,user_birthday,user_photos,user_status'});
+        },{scope: 'public_profile,user_friends,email,user_posts,user_photos,user_status'});
     };
 
     // DATA
@@ -384,8 +384,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
     ];
 
     $scope.friends = [
-        { id: "10155424826645077", name: "Nikkita Nair", status: 'inactive'},
-        { id: "10152628496730146", name: "Rennie Haylock", status: 'inactive'},
     ];
 
     $scope.member = {};
