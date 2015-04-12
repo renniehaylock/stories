@@ -24,6 +24,16 @@ h2 {
 		overflow: hidden;
 }
 
+::-moz-selection { /* Code for Firefox */
+		color: white;
+    background: #E55D87
+}
+
+::selection {
+		color: white;
+    background: #E55D87;
+}
+
 .sidebar-collapse-box {
 	color: #999;
   width: 250px;
