@@ -20,6 +20,20 @@ h2 {
 	font-size: 25px;
 }
 
+.reference {
+	position: absolute;
+	bottom: 20px;
+	right:20px;
+	color: #ccc;
+}
+.reference a:hover {
+	color: #248fea;
+	text-decoration: none;
+}
+.reference a {
+	color: #bbb;
+}
+
 .hide-overflow {
 		overflow: hidden;
 }
