@@ -2,9 +2,6 @@
 // This is called with the results from from FB.getLoginStatus().
 function statusChangeCallback(response) {
 
-  console.log('statusChangeCallback');
-  console.log(response);
-
   // The response object is returned with a status field that lets the
   // app know the current login status of the person.
   // Full docs on the response object can be found in the documentation
@@ -14,8 +11,7 @@ function statusChangeCallback(response) {
     // Logged into your app and Facebook
     // Get the user data to update UI...
     FB.api('/me', function(response) {
-      console.log(response);
-      console.log('Successful login for: ' + response.id);
+      
       $("._fbloginbutton").html(response.name);
       $("._fbloginbutton").attr("ng-click", "goHome()");
       $("._fbloginbutton").prepend("<img class='profile-pic' src='https://graph.facebook.com/v2.3/" + response.id + "/picture'>");

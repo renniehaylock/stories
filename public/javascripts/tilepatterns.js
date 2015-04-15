@@ -1,13 +1,3 @@
-// var tilePatterns = [
-// 		{ imagecount: 4, 	pattern: 	'lwss' 					}, // TOP
-// 		{ imagecount: 4, 	pattern: 	'wlss' 					}, // TOP
-// 		{ imagecount: 6, 	pattern: 	'llssss' 				}, // TOP
-// 		{ imagecount: 7, 	pattern: 	'wssssss' 			},
-// 		{ imagecount: 7, 	pattern: 	'tllssss' 			}, // TOP
-// 		{ imagecount: 9, 	pattern: 	'lssssssss' 		},
-// 		{ imagecount: 10, pattern: 	'tlssssssss' 	},
-// 	];
-
 var tilePatterns = [
 		{ imagecount: 2, 	pattern: 	'lw' 						}, // TO
 		{ imagecount: 2, 	pattern: 	'wl' 						}, // TO

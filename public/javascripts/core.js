@@ -120,24 +120,9 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
     };
 
     $scope.getStoriesForYear = function(year) {
-        // First check if the current story pool has enough pictures to display...
-        // IF IT DOES
 
-        // toggleYear(year);
-        // if ($scope.stories has enough stories for timestamp) {
-        //     applyFilters();
-        // } else {
-        //     timestamp = year.timestamp
-        //     getFeedWithTimestamp(timestamp);
-        //     getPhotosWithTimestamp(timestamp);
-        // }
         timestamp = year.timestamp;
         sincetimestamp = year.sincetimestamp;
-        console.log("Checking year since ");
-        console.log(timestamp);
-        console.log("Checking year until ");
-        console.log(sincetimestamp);
-
 
         getFeedWithTimestamp(timestamp, sincetimestamp);
         getPhotosWithTimestamp(timestamp, sincetimestamp);
@@ -216,8 +201,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
 
     function getFeedWithTimestamp(timestamp, sincetimestamp) {
         FB.api('/me/feed?limit=240&until=' + timestamp + '&since=' + sincetimestamp, function(response) {
-            console.log('Getting Text Posts');
-            console.log(response);
             response.data.forEach(function(story) {
 
                 // Populate the friends array
@@ -270,15 +253,12 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             $scope.sortStoriesByDate();
             $scope.stories = tileStories($scope.stories);
             $scope.$apply();
-            console.log($scope.stories);
         });
     };
 
     function getPhotosWithTimestamp(timestamp, sinceTimestamp) {
         FB.api('/me/photos?limit=240&until=' + timestamp + '&since=' + sincetimestamp, function(response) {
 
-            console.log('Getting Photos');
-            console.log(response);
             response.data.forEach(function(story) {
 
                 // Only add the story if its not already in our storyPool
@@ -302,7 +282,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             $scope.sortStoriesByDate();
             $scope.stories = tileStories($scope.stories);
             $scope.$apply();
-            console.log($scope.stories);
         });
     }
 
@@ -312,8 +291,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         FB.logout(function(response) {
             // Update login state
             checkLoginState();
-            console.log("User logged out");
-            console.log(response);
         });
     };
 
@@ -343,7 +320,7 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
                 checkLoginState();
                 console.log('User cancelled login or did not fully authorize.');
             }
-        },{scope: 'public_profile,user_friends,email,user_posts,user_photos,user_status'});
+        },{scope: 'public_profile,user_friends,email,user_posts,user_photos'});
     };
 
     // DATA
@@ -472,8 +449,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         var storyPool = stories.filter(displayable);
         var storyCount = storyPool.length;
         var storyPointer = 0;
-        console.log('Story Pool');
-        console.log(storyPool);
         
 
         // Update # of visible stories
@@ -485,10 +460,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
             if (validPatterns.length == 0) { break; };
             // Random choose one of the patterns
             var randPattern = validPatterns[Math.floor(Math.random()*validPatterns.length)];
-            console.log("valid Patterns are");
-            console.log(validPatterns);
-            console.log("Chosen Pattern is");
-            console.log(randPattern);
             patternString = randPattern.pattern;
             for ( var i = 0; i < patternString.length; i++ ) {
                 if (storyPointer >= storyCount) break;
@@ -576,7 +547,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
     // stories that are part of the selected type, year, and friend
     // *
     function toggleStories(display, type) {
-        console.log("Im in toggle stories");
 
         selectedYear = getSelectedYear();
         selectedFriend = getSelectedFriend();
@@ -584,9 +554,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         startTimestamp = selectedYear.sincetimestamp*1000;
         endTimestamp = selectedYear.timestamp*1000;
 
-        console.log(startTimestamp);
-        console.log(endTimestamp);
-        console.log($scope.stories);
         for (i = 0; i < $scope.stories.length ; i++) {
             if ($scope.stories[i].timestamp < startTimestamp || $scope.stories[i].timestamp > endTimestamp || (selectedFriend && !isFriendRelatedStory($scope.stories[i], selectedFriend))) {
                 $scope.stories[i].display = false;
@@ -713,9 +680,6 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
     // *
     function applyFilters() {
         for (filter in $scope.filters) {
-
-            console.log('INSIDE FILTERS');
-            console.log($scope.filters[filter]);
 
             if ($scope.filters[filter].status == 'active') {
                 toggleStories(true, $scope.filters[filter].identifier);
