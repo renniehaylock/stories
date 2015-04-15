@@ -93,6 +93,7 @@ h2 {
 .sidebar-item-title-box {
 	border-top: 2px solid #222429;
 	padding: 25px 10px 25px 20px;
+	display: block;
 }
 
 .sidebar-item-title-box img.icon {
