@@ -342,8 +342,8 @@ storiesApp.controller('mainController', ['$scope', '$http', function ($scope, $h
         statusupdates : { name: 'Status Updates',   status : 'active',    identifier : 'mobile_status_update' },
         wallposts :     { name: 'Wall Posts',       status : 'active',    identifier : 'wall_post'  },
         links :         { name: 'Links',            status : 'active',    identifier : 'shared_story'  },
-        photostories :  { name: 'Photo Stories',    status : 'inactive',    identifier : 'added_photos'  },
-        locationtags :  { name: 'Location Tags',    status : 'inactive' },
+        photostories :  { name: 'Photo Stories',    status : 'active',    identifier : 'added_photos'  },
+        locationtags :  { name: 'Location Tags',    status : 'active' },
     };
 
     $scope.years = [
